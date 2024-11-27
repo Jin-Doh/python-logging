@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parents[1]))
-from module import Logger
+from emoji_logger import Logger
 
 def test_debug_lv():
     logger = Logger("test_debug_lv", "DEBUG")

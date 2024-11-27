@@ -1,11 +1,10 @@
 [tool.poetry]
 name = "emoji_logger"
-version = "0.1.1"
+version = "0.1.8"
 description = "Custom python logging module"
 authors = ["KyungHo Kim <qqaa3030@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "module" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -17,3 +16,6 @@ pytest = "^8.3.3"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.setuptools]
+packages = ["emoji_logger"]
