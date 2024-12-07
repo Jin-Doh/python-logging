@@ -49,7 +49,7 @@ class Logger:
             if not log_path:
                 raise ValueError("log_path is required when is_save is True")
             self.log_path = Path(log_path)
-            self._set_file_handler(self.log_path)
+            self._set_file_handler()
 
     def _set_stream_handler(self):
         self.console_handler = logging.StreamHandler(stream=sys.stdout)
