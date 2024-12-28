@@ -1,52 +1,77 @@
-import sys
+import logging
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parents[1]))
-from emoji_logger import Logger
+import pytest
 
-def test_debug_lv():
-    logger = Logger("test_debug_lv", "DEBUG")
-    logger.logger.debug("This is a debug message")
-    logger.logger.info("This is an info message")
-    logger.logger.warning("This is a warning message")
-    logger.logger.error("This is an error message")
-    logger.logger.critical("This is a critical message")
+from emoji_logger import LogConfig, Logger
 
-def test_info_lv():
-    logger = Logger("test_info_lv", "INFO")
-    logger.logger.debug("This is a debug message")
-    logger.logger.info("This is an info message")
-    logger.logger.warning("This is a warning message")
-    logger.logger.error("This is an error message")
-    logger.logger.critical("This is a critical message")
 
-def test_warning_lv():
-    logger = Logger("test_warning_lv", "WARNING")
-    logger.logger.debug("This is a debug message")
-    logger.logger.info("This is an info message")
-    logger.logger.warning("This is a warning message")
-    logger.logger.error("This is an error message")
-    logger.logger.critical("This is a critical message")
+@pytest.fixture
+def temp_log_file(tmp_path):
+    return tmp_path / "test.log"
 
-def test_error_lv():
-    logger = Logger("test_error_lv", "ERROR")
-    logger.logger.debug("This is a debug message")
-    logger.logger.info("This is an info message")
-    logger.logger.warning("This is a warning message")
-    logger.logger.error("This is an error message")
-    logger.logger.critical("This is a critical message")
 
-def test_critical_lv():
-    logger = Logger("test_critical_lv", "CRITICAL")
-    logger.logger.debug("This is a debug message")
-    logger.logger.info("This is an info message")
-    logger.logger.warning("This is a warning message")
-    logger.logger.error("This is an error message")
-    logger.logger.critical("This is a critical message")
+def test_log_levels():
+    test_cases = [
+        ("DEBUG", ["debug", "info", "warning", "error", "critical"]),
+        ("INFO", ["info", "warning", "error", "critical"]),
+        ("WARNING", ["warning", "error", "critical"]),
+        ("ERROR", ["error", "critical"]),
+        ("CRITICAL", ["critical"]),
+    ]
+
+    for level, expected_logs in test_cases:
+        logger = Logger(f"test_{level.lower()}", level)
+        for log_level in expected_logs:
+            getattr(logger, log_level)(f"Test {log_level} message")
+        # Try logging all levels
+        logger.debug("debug message")
+        logger.info("info message")
+        logger.warning("warning message")
+        logger.error("error message")
+        logger.critical("critical message")
+
+        # Validate log level
+        assert logger.logger.getEffectiveLevel() == getattr(logging, level)
+
+
+def test_file_logging(temp_log_file: Path):
+    logger = Logger(
+        name="test_file",
+        level="DEBUG",
+        is_save=True,
+        log_path=str(temp_log_file),
+    )
+    test_message = "Test file logging"
+    logger.info(test_message)
+
+    assert temp_log_file.exists()
+    with open(temp_log_file) as f:
+        content = f.read()
+        assert test_message in content
+
+
+def test_custom_config():
+    custom_config = LogConfig(
+        border_line="*" * 30, sep_line="-" * 30, date_format="%Y-%m-%d"
+    )
+    logger = Logger("test_custom", "DEBUG", config=custom_config)
+    logger.info("Test custom config")
+    # In this case, we are not checking the output format,
+    # but only checking if the logger is created successfully
+    assert logger.config.border_line == "*" * 30
+
+
+def test_duplicate_filter():
+    logger = Logger("test_duplicate")
+    test_message = "Duplicate message"
+
+    # Test duplicate message
+    logger.info(test_message)
+    logger.info(test_message)
+    # Duplicate filtering will filter out the second message
+    # Check if the logger is working properly
+
 
 if __name__ == "__main__":
-    test_debug_lv()
-    test_info_lv()
-    test_warning_lv()
-    test_error_lv()
-    test_critical_lv()
+    pytest.main([__file__])
