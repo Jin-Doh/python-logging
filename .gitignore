@@ -225,4 +225,7 @@ pyrightconfig.json
 .history
 .ionide
 
+# Pre-commit
+.pre-commit-config.yaml
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,python
