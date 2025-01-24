@@ -228,4 +228,7 @@ pyrightconfig.json
 # Pre-commit
 .pre-commit-config.yaml
 
+# vscode
+.vscode/
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,python

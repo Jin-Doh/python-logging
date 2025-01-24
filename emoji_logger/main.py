@@ -1,5 +1,6 @@
 import inspect
 import logging
+import os
 import sys
 import traceback
 from dataclasses import dataclass
@@ -122,29 +123,43 @@ class Logger:
     def _get_formatter(config: LogConfig = LogConfig()):
         class CustomFormatter(logging.Formatter):
             def format(self, record):
-                caller_stack = inspect.stack()
-                for frame_info in caller_stack:
-                    frame = frame_info[0]
-                    module = inspect.getmodule(frame)
-                    if module and not module.__name__.startswith(
-                        ("emoji_logger", "logging")
-                    ):
-                        record.filename = (
-                            "/".join(frame_info.filename.split("/")[-3:])
-                            if len(frame_info.filename.split("/")) > 3
-                            else frame_info.filename
-                        )
+                original_format = super().format(record)
+                try:
+                    stack = inspect.stack()
+                    logger_module = __name__  # 'emoji_logger.main'
+
+                    for frame_info in stack[1:]:
+                        # 모듈 이름 가져오기
+                        frame = frame_info.frame
+                        frame_module = frame.f_globals.get("__name__", "")
+
+                        # pytest 관련 모듈 필터링
+                        if any(
+                            [
+                                frame_module == logger_module,
+                                frame_module.startswith("logging"),
+                                frame_module.startswith("pytest"),
+                            ]
+                        ):
+                            continue
+
+                        # 파일명 추출
+                        record.filename = os.path.basename(frame_info.filename)
                         record.funcName = frame_info.function
                         record.lineno = frame_info.lineno
                         break
-                return super().format(record)
+
+                except Exception as e:
+                    print(f"Error getting caller info: {e}")
+
+                return original_format
 
         return CustomFormatter(
             f"{config.border_line}\n"
             f"%(asctime)s | %(levelname)s | %(name)s\n"
             f"%(filename)s | %(funcName)s | %(lineno)d\n"
             f"{config.sep_line}\n"
-            "%(message)s\n"
+            f"%(message)s\n"
             f"{config.border_line}",
             datefmt=config.date_format,
         )

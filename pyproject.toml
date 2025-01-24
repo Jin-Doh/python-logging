@@ -1,21 +1,24 @@
-[tool.poetry]
+[project]
 name = "emoji_logger"
-version = "0.1.13"
+version = "0.1.14"
 description = "Custom python logging module"
-authors = ["KyungHo Kim <qqaa3030@gmail.com>"]
-license = "MIT"
+authors = [{ name = "KyungHo Kim", email = "qqaa3030@gmail.com" }]
+license = { text = "MIT" }
 readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
 
-[tool.poetry.dependencies]
-python = "^3.10"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.3"
-pre-commit = "^4.0.1"
+[dependency-groups]
+dev = ["pre-commit>=4.1.0", "pytest>=8.3.4", "pytest-cov>=6.0.0"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.setuptools]
+[tool.hatch.build.targets.wheel]
 packages = ["emoji_logger"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "--cov=emoji_logger --cov-report=term-missing"
