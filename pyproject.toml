@@ -1,6 +1,6 @@
 [project]
 name = "emoji_logger"
-version = "0.1.14"
+version = "0.1.15"
 description = "Custom python logging module"
 authors = [{ name = "KyungHo Kim", email = "qqaa3030@gmail.com" }]
 license = { text = "MIT" }

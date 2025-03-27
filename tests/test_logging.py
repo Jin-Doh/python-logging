@@ -186,5 +186,39 @@ def test_log_formatting(string_buffer):
     assert re.search(date_pattern, output) is not None
 
 
+def test_singleton_applied():
+    # 동일 이름을 사용하면 logging.getLogger가 동일 인스턴스를 반환하므로 Logger 내부 logger도 동일해야 함
+    logger1 = Logger("singleton", level="DEBUG")
+    logger2 = Logger("singleton", level="DEBUG")
+    assert logger1.logger is logger2.logger, "싱글톤 적용 시 동일 인스턴스여야 함"
+
+
+def test_singleton_not_applied():
+    # 다른 이름을 사용하면 서로 다른 인스턴스가 반환되어야 함
+    logger1 = Logger("non_singleton1", level="DEBUG")
+    logger2 = Logger("non_singleton2", level="DEBUG")
+    assert (
+        logger1.logger is not logger2.logger
+    ), "싱글톤 미적용 시 서로 다른 인스턴스여야 함"
+
+
+def test_disk_space_zero(monkeypatch, tmp_path):
+    # 디스크 공간 부족 상황을 시뮬레이션하기 위해 Path.mkdir를 오버라이드
+    log_dir = tmp_path / "logs"
+    log_file = log_dir / "diskfull.log"
+
+    def fake_mkdir(*args, **kwargs):
+        raise OSError("No space left on device")
+
+    monkeypatch.setattr(Path, "mkdir", fake_mkdir)
+    with pytest.raises(OSError, match="No space left on device"):
+        Logger(
+            name="test_disk",
+            level="DEBUG",
+            is_save=True,
+            log_path=str(log_file),
+        )
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
